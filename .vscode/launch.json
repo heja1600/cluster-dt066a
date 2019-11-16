@@ -2,6 +2,25 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CodeLens (Launch) - Main",
+            "request": "launch",
+            "mainClass": "src.Main",
+            "projectName": "cluster-dt066a"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - Mapping",
+            "request": "launch",
+            "mainClass": "Mapping"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - Main",
+            "request": "launch",
+            "mainClass": "main.Main"
+        },
+        {
+            "type": "java",
             "name": "CodeLens (Launch) - Master",
             "request": "launch",
             "mainClass": "Master"
