@@ -6,5 +6,4 @@ public class AwakeMessage extends Message {
     public String messageType() {
         return "Awake Message";
     }
-
 }

@@ -13,22 +13,28 @@ import shared.message.*;
 
 public class UDPCommunication {
     private DatagramSocket datagramSocket = null;
-    public boolean runCommunication = true;
     private MessageSerializer messageSerializer = new MessageSerializer();
     private Config config;
     private IMessageReceived iMessageReceived;
+    private RecieveThread rt;
+
+    public boolean runCommunication = true;
 
     public UDPCommunication(Config config, IMessageReceived iMessageReceived) {
         this.iMessageReceived = iMessageReceived;
         this.config = config;
         try {
-            runCommunication = true;
             datagramSocket = new MulticastSocket(config.datagramSocketPort);
-            RecieveThread rt = new RecieveThread();
+            rt = new RecieveThread();
             rt.start();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void join() throws InterruptedException {
+        rt.join();
     }
 
     public void shutdown() {
@@ -43,11 +49,13 @@ public class UDPCommunication {
         }
     }
 
-    public <T extends Message> void sendMessage(T message, InetAddress ipAddres) {
+    public <T extends Message> void sendMessage(T message, InetAddress inetAddress) {
+        // System.out.println("Message from " + config.self.getInetAddress() + " to " +
+        // inetAddress.getHostAddress());
         try {
             byte[] sendData = messageSerializer.serializeMessage(message);
-            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, ipAddres,
-                    config.datagramSocketPort);
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length,
+                    InetAddress.getByName("255.255.255.255"), config.datagramSocketPort);
             datagramSocket.send(sendPacket);
         } catch (Exception e) {
             e.printStackTrace();
@@ -79,8 +87,10 @@ public class UDPCommunication {
         }
 
         public void handleMessage(Message message) {
-            if (message.raspberryPi.getInetAddress().getHostAddress() != config.self.getInetAddress().getHostAddress())
-                iMessageReceived.onMessageReceived(message);
+            // if (!message.raspberryPi.getInetAddress().getHostAddress()
+            // .equals(config.self.getInetAddress().getHostAddress()))
+            iMessageReceived.onMessageReceived(message);
         }
     }
+
 }

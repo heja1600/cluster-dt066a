@@ -13,27 +13,33 @@ import shared.message.Message;
 import shared.other.RaspberryPi;
 import shared.other.SetTimeout;
 
-public class CheckRaspberryPisUp implements IMessageReceived {
+public class FindRaspberryPis implements IMessageReceived {
 
     private Config config;
     private Logger logger;
     private IRaspberryAlive iRaspberryAlive;
     private List<RaspberryPi> aliveRaspberryPis = new ArrayList<>();
 
-    public CheckRaspberryPisUp(Config config, Logger logger, IRaspberryAlive iRaspberryAlive) {
+    public FindRaspberryPis(Config config, Logger logger, IRaspberryAlive iRaspberryAlive) {
         this.config = config;
+        this.logger = logger;
         this.iRaspberryAlive = iRaspberryAlive;
     }
 
-    public void check() {
+    public void find() {
         // make awake message
         UDPCommunication communication = new UDPCommunication(config, this);
         communication.broadcastMessage(new AwakeMessage());
-        SetTimeout.setTimeout(() -> iRaspberryAlive.onRaspberryPiResponse(this.aliveRaspberryPis), 2000);
+        SetTimeout.setTimeout(() -> {
+            communication.shutdown();
+            iRaspberryAlive.onRaspberryPiResponse(this.aliveRaspberryPis);
+        }, config.findSlaveTimeout);
     }
 
     @Override
     public void onMessageReceived(Message message) {
+        logger.log(message);
+
         if (message instanceof AwakeMessage) {
             this.aliveRaspberryPis.add(message.raspberryPi);
         }

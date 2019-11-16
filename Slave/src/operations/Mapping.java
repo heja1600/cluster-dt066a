@@ -1,5 +1,7 @@
 package src.operations;
 
+import java.util.ArrayList;
+
 import shared.message.MappingMessage;
 
 public class Mapping {
@@ -9,7 +11,21 @@ public class Mapping {
         this.mappingMessage = mappingMessage;
     }
 
-    public void map() {
+    public ArrayList<String> map() {
+        ArrayList<String> mappedWords = new ArrayList<String>();
+        try {
+            String[] words = mappingMessage.content.split(" |\\,");
+            for (String word : words) {
+                if (word.length() > 0) {
+                    mappedWords.add(word);
+                }
+            }
+        } catch (Exception e) {
+            for (String str : mappedWords) {
+                System.out.println(str);
+            }
+        }
 
+        return mappedWords;
     }
 }
