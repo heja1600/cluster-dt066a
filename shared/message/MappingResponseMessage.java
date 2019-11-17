@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 public class MappingResponseMessage extends Message {
 
+    private static final long serialVersionUID = 1L;
     public String id;
     public ArrayList<String> content;
 

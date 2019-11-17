@@ -4,5 +4,5 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public interface IReduceRequest {
-    public void onReduceResponse(HashMap<String, ArrayList<String>> mappedValues);
+    public void onReduceResponse(HashMap<String, ArrayList<Integer>> reducedValues);
 }

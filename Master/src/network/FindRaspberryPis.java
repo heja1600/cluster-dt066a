@@ -32,13 +32,14 @@ public class FindRaspberryPis implements IMessageReceived {
         communication.broadcastMessage(new AwakeMessage());
         SetTimeout.setTimeout(() -> {
             communication.shutdown();
+            this.aliveRaspberryPis.remove(0); // temporary, same ip
             iRaspberryAlive.onRaspberryPiResponse(this.aliveRaspberryPis);
         }, config.findSlaveTimeout);
     }
 
     @Override
     public void onMessageReceived(Message message) {
-        logger.log(message);
+        logger.log(message, true);
 
         if (message instanceof AwakeMessage) {
             this.aliveRaspberryPis.add(message.raspberryPi);

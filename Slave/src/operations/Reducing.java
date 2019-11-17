@@ -9,7 +9,7 @@ public class Reducing {
         this.reduceMessage = reduceMessage;
     }
 
-    public void reduce() {
-
+    public Integer reduce() {
+        return reduceMessage.words.size(); // this is stupid
     }
 }

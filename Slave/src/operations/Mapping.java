@@ -21,9 +21,7 @@ public class Mapping {
                 }
             }
         } catch (Exception e) {
-            for (String str : mappedWords) {
-                System.out.println(str);
-            }
+
         }
 
         return mappedWords;

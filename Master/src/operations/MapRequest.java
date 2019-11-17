@@ -23,7 +23,6 @@ public class MapRequest implements IMessageReceived {
     private Logger logger;
 
     private Integer messageId = 0;
-    private int counter = 0;
     private HashMap<String, ArrayList<String>> responses = new HashMap<String, ArrayList<String>>();
     private HashMap<String, String> messagesPending = new HashMap<String, String>();
     private UDPCommunication udpCommunication;
@@ -38,7 +37,7 @@ public class MapRequest implements IMessageReceived {
     }
 
     public void send() {
-        logger.log("Starting to send MapRequests");
+        logger.log("Starting to send MapRequests", true);
         for (RaspberryPi slave : config.slaves)
             addPendingMessage(slave);
         for (RaspberryPi slave : config.slaves)
@@ -55,7 +54,7 @@ public class MapRequest implements IMessageReceived {
     }
 
     private String getId(Integer id) {
-        return "OrderMap" + id;
+        return "#OM_ID::" + id;
     }
 
     private void sendSplit(RaspberryPi slave) {
@@ -68,8 +67,9 @@ public class MapRequest implements IMessageReceived {
     public void onMessageReceived(Message message) {
 
         if (message instanceof MappingResponseMessage) {
-            logger.log(((MappingResponseMessage) message).id);
+
             MappingResponseMessage mrm = (MappingResponseMessage) message;
+            logger.log(mrm, false);
             responses.put(mrm.id, mrm.content);
             removePendingMessage(message.raspberryPi);
             // If theres still lines to be sent
@@ -84,6 +84,7 @@ public class MapRequest implements IMessageReceived {
                 if (messagesPending.isEmpty()) {
                     udpCommunication.shutdown();
                     iMapRequest.onMapResponse(responses);
+                    logger.log("Finished to send MapRequests", true);
                 }
             }
         }

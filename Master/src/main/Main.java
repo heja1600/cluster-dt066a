@@ -11,7 +11,7 @@ import wordcount.WordCount;
 
 public class Main implements IRaspberryAlive {
     Config config = new Config();
-    Logger logger = new Logger();
+    Logger logger = new Logger(config);
 
     public static void main(String[] args) {
         new Main();

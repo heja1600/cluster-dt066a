@@ -1,12 +1,10 @@
 package shared.message;
 
-import java.util.ArrayList;
-
-public class ReduceMessage extends Message {
+public class ReduceResponseMessage extends Message {
 
     private static final long serialVersionUID = 1L;
     public String id;
-    public ArrayList<String> words;
+    public Integer count;
     public String word;
 
     @Override
@@ -14,9 +12,9 @@ public class ReduceMessage extends Message {
         return "Reduce Message";
     }
 
-    public ReduceMessage(String id, String word, ArrayList<String> words) {
+    public ReduceResponseMessage(String id, Integer count, String word) {
         this.id = id;
-        this.words = words;
+        this.count = count;
         this.word = word;
     }
 }

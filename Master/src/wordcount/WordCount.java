@@ -8,18 +8,20 @@ import java.util.HashSet;
 
 import listeners.IMapRequest;
 import listeners.IReduceRequest;
+import listeners.IReverseIndexRequest;
 import logs.Logger;
 import operations.MapRequest;
+import operations.MergeResult;
 import operations.ReduceRequest;
 import operations.ReverseIndex;
 import operations.Split;
 import shared.config.Config;
 
-public class WordCount implements IMapRequest, IReduceRequest {
+public class WordCount implements IMapRequest, IReduceRequest, IReverseIndexRequest {
 
     Config config;
     Logger logger;
-
+    long startTime = System.currentTimeMillis();
     private ArrayList<String> content;
 
     public WordCount(Config config, Logger logger) {
@@ -28,15 +30,16 @@ public class WordCount implements IMapRequest, IReduceRequest {
     }
 
     public void countWords() {
-        long startTime = System.currentTimeMillis();
 
         try {
             content = ImportFile.importFile(logger, config.fileInputPath);
+            logger.overwriteFile(content.toString(), config.loggerImportPath);
             // Split
             ArrayList<String> lines = Split.split(logger, content, config.linesPerSplit);
-
+            logger.overwriteFile(lines.toString(), config.loggerSplitPath);
             // Request map ordering
             MapRequest mapRequest = new MapRequest(lines, config, logger, this);
+
             mapRequest.send();
 
         } catch (IOException e) {
@@ -47,13 +50,25 @@ public class WordCount implements IMapRequest, IReduceRequest {
 
     @Override
     public void onMapResponse(HashMap<String, ArrayList<String>> mappedValues) {
-        HashMap<String, HashSet<String>> reversedValues = ReverseIndex.reverseIndex(mappedValues);
-        ReduceRequest reduceRequest = new ReduceRequest(config, logger, reversedValues, this);
-        reduceRequest.send();
+        logger.overwriteFile(mappedValues.toString(), config.loggerMapPath);
+
+        ReverseIndex reverseIndex = new ReverseIndex(mappedValues, logger, config, this);
+        reverseIndex.send();
+
     }
 
     @Override
-    public void onReduceResponse(HashMap<String, ArrayList<String>> mappedValues) {
+    public void onReduceResponse(HashMap<String, ArrayList<Integer>> reducedValues) {
+        logger.overwriteFile(reducedValues.toString(), config.loggerReducePath);
+        HashMap<String, Integer> result = MergeResult.mergeResult(config, logger, reducedValues);
 
+        logger.overwriteFile(result.toString(), config.loggerResultPath);
+    }
+
+    @Override
+    public void onReverseIndexResponse(HashMap<String, ArrayList<String>> reversedValues) {
+        logger.overwriteFile(reversedValues.toString(), config.loggerReversePath);
+        ReduceRequest reduceRequest = new ReduceRequest(config, logger, reversedValues, this);
+        reduceRequest.send();
     }
 }

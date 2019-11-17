@@ -15,12 +15,19 @@ public class Config {
 
     public final Integer datagramSocketPort = 9999;
     public final Integer findSlaveTimeout = 200;
-    public Integer linesPerSplit = 100;
+    public Integer linesPerSplit = 2;
 
     public List<RaspberryPi> slaves;
     public RaspberryPi self;
 
-    public Path fileInputPath = Paths.get("Data/data.csv");
+    public Path fileInputPath = Paths.get("Data/data10k.csv");
+    public Path loggerPath = Paths.get("LogFiles/logger.txt");
+    public Path loggerMapPath = Paths.get("LogFiles/map.txt");
+    public Path loggerSplitPath = Paths.get("LogFiles/split.txt");
+    public Path loggerReducePath = Paths.get("LogFiles/reduce.txt");
+    public Path loggerImportPath = Paths.get("LogFiles/import.txt");
+    public Path loggerResultPath = Paths.get("LogFiles/result.txt");
+    public Path loggerReversePath = Paths.get("LogFiles/reverse.txt");
 
     public Config() {
         try {

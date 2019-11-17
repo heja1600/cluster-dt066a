@@ -1,6 +1,8 @@
 package src;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import shared.communication.UDPCommunication;
 import shared.communication.listeners.IMessageReceived;
@@ -10,8 +12,12 @@ import shared.message.MappingMessage;
 import shared.message.MappingResponseMessage;
 import shared.message.Message;
 import shared.message.ReduceMessage;
+import shared.message.ReduceResponseMessage;
+import shared.message.ReverseMessage;
+import shared.message.ReverseResponseMessage;
 import src.operations.Mapping;
 import src.operations.Reducing;
+import src.operations.Reversing;
 
 public class Main implements IMessageReceived {
     Config config;
@@ -41,23 +47,32 @@ public class Main implements IMessageReceived {
         } else if (message instanceof ReduceMessage) {
             handleReduceMessage((ReduceMessage) message);
 
+        } else if (message instanceof ReverseMessage) {
+            handleReverseMessage((ReverseMessage) message);
         }
     }
 
     public void handleMappingMessage(MappingMessage message) {
-        counter++;
-        System.out.println(counter);
-        MappingMessage mm = (MappingMessage) message;
-        Mapping mapping = new Mapping(mm);
+        Mapping mapping = new Mapping(message);
         ArrayList<String> words = mapping.map();
 
         MappingResponseMessage mrm = new MappingResponseMessage(message.id, words);
         udpCommunication.sendMessage(mrm, message.raspberryPi.getInetAddress());
-        System.out.println(message.id);
     }
 
     public void handleReduceMessage(ReduceMessage message) {
         Reducing reducing = new Reducing(message);
-        reducing.reduce();
+        Integer count = reducing.reduce();
+
+        ReduceResponseMessage rrm = new ReduceResponseMessage(message.id, count, message.word);
+        udpCommunication.sendMessage(rrm, message.raspberryPi.getInetAddress());
+    }
+
+    public void handleReverseMessage(ReverseMessage message) {
+        Reversing reversing = new Reversing(message);
+        HashMap<String, ArrayList<String>> reversed = reversing.reverse();
+
+        ReverseResponseMessage rrm = new ReverseResponseMessage(message.id, reversed);
+        udpCommunication.sendMessage(rrm, message.raspberryPi.getInetAddress());
     }
 }
