@@ -62,9 +62,9 @@ public class Main implements IMessageReceived {
 
     public void handleReduceMessage(ReduceMessage message) {
         Reducing reducing = new Reducing(message);
-        Integer count = reducing.reduce();
+        HashMap<String, Integer> reduced = reducing.reduce();
 
-        ReduceResponseMessage rrm = new ReduceResponseMessage(message.id, count, message.word);
+        ReduceResponseMessage rrm = new ReduceResponseMessage(message.id, reduced);
         udpCommunication.sendMessage(rrm, message.raspberryPi.getInetAddress());
     }
 
@@ -74,5 +74,6 @@ public class Main implements IMessageReceived {
 
         ReverseResponseMessage rrm = new ReverseResponseMessage(message.id, reversed);
         udpCommunication.sendMessage(rrm, message.raspberryPi.getInetAddress());
+
     }
 }

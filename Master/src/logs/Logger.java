@@ -51,13 +51,13 @@ public class Logger {
 
     public <T extends Message> void log(T message, boolean shouldSystemOut) {
 
-        String log = "%MESSAGELOG% {" + message.messageType() + "} from: "
+        String log = "% MESSAGELOG % {" + message.messageType() + "} from: "
                 + message.raspberryPi.getInetAddress().getHostAddress();
         writeLog(log, shouldSystemOut);
     }
 
     public void log(String log, boolean shouldSystemOut) {
-        log = "%DEFAULTLOG% " + log;
+        log = "<= DEFAULTLOG => " + log;
         writeLog(log, shouldSystemOut);
     }
 
@@ -100,7 +100,7 @@ public class Logger {
 
     public void overwriteFile(String content, Path path) {
         content = content.replaceAll("(.{100})", "$1\n");
-        writeLog("%OVERWRITING% Starting -> " + path.toString(), true);
+        writeLog("[ Overwriting ] Starting -> " + path.toString(), true);
         try {
             initMembers(path);
             PrintWriter writer = new PrintWriter(file);
@@ -109,6 +109,6 @@ public class Logger {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        writeLog("%OVERWRITING% Finnished ->" + path.toString(), true);
+        writeLog("[ Overwriting ] Finnished ->" + path.toString(), true);
     }
 }

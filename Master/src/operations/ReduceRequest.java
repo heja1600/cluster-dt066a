@@ -1,9 +1,11 @@
 package operations;
 
 import java.net.InetAddress;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 import listeners.IReduceRequest;
 import logs.Logger;
@@ -22,7 +24,7 @@ public class ReduceRequest implements IMessageReceived {
     private UDPCommunication udpCommunication;
     private IReduceRequest iReduceRequest;
     private HashMap<String, ArrayList<String>> reverse;
-    private HashMap<String, ArrayList<Integer>> result = new HashMap<>();
+    private HashMap<String, Integer> result = new HashMap<>();
     private HashMap<String, ReduceMessage> messagesPending = new HashMap<>();
     private ArrayList<String> keys = new ArrayList<>();
     private Integer messageId = 0;
@@ -56,11 +58,21 @@ public class ReduceRequest implements IMessageReceived {
 
     private void addPendingMessage(RaspberryPi slave) {
 
-        String key = keys.get(0);
-        keys.remove(0);
-        ArrayList<String> reduce = reverse.get(key);
+        HashMap<String, ArrayList<String>> sendingData = new HashMap<>();
 
-        ReduceMessage rm = new ReduceMessage(getId(messageId++), key, reduce);
+        /**
+         * this is very retarded, but i do this to test network throughtput
+         */
+        Integer currentSize = 0;
+        while (currentSize < config.maxAmountOfReduceSize && !keys.isEmpty()) {
+            String key = keys.get(0);
+            keys.remove(0);
+            ArrayList<String> reduce = reverse.get(key);
+            sendingData.put(key, reduce);
+            currentSize += reduce.size();
+        }
+
+        ReduceMessage rm = new ReduceMessage(getId(messageId++), sendingData);
 
         messagesPending.put(slave.getInetAddress().getHostAddress(), rm);
 
@@ -81,10 +93,13 @@ public class ReduceRequest implements IMessageReceived {
 
     }
 
-    private void insert(String word, Integer value) {
-        if (result.get(word) == null)
-            result.put(word, new ArrayList<Integer>());
-        result.get(word).add(value);
+    private void insert(HashMap<String, Integer> reducedValues) {
+        for (Map.Entry<String, Integer> entry : reducedValues.entrySet()) {
+            if (!result.containsKey(entry.getKey()))
+                result.put(entry.getKey(), entry.getValue());
+            else
+                result.put(entry.getKey(), result.get(entry.getKey()) + entry.getValue());
+        }
     }
 
     @Override
@@ -93,7 +108,7 @@ public class ReduceRequest implements IMessageReceived {
         if (message instanceof ReduceResponseMessage) {
             ReduceResponseMessage rrm = (ReduceResponseMessage) message;
             logger.log(rrm, false);
-            insert(rrm.word, rrm.count);
+            insert(rrm.result);
             removePendingMessage(message.raspberryPi);
             // If theres still lines to be sent
             if (!keys.isEmpty()) {

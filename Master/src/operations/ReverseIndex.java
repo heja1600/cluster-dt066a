@@ -18,6 +18,7 @@ import shared.message.ReverseResponseMessage;
 import shared.other.RaspberryPi;
 
 public class ReverseIndex implements IMessageReceived {
+
     private Iterator<Entry<String, ArrayList<String>>> it;
     private Entry<String, ArrayList<String>> current;
     private Logger logger;
@@ -39,6 +40,7 @@ public class ReverseIndex implements IMessageReceived {
     }
 
     public void send() {
+        logger.log("starting reverse", true);
         for (RaspberryPi slave : config.slaves)
             addPendingMessage(slave);
         for (RaspberryPi slave : config.slaves)

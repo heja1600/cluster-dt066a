@@ -4,14 +4,12 @@ package wordcount;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import listeners.IMapRequest;
 import listeners.IReduceRequest;
 import listeners.IReverseIndexRequest;
 import logs.Logger;
 import operations.MapRequest;
-import operations.MergeResult;
 import operations.ReduceRequest;
 import operations.ReverseIndex;
 import operations.Split;
@@ -58,11 +56,9 @@ public class WordCount implements IMapRequest, IReduceRequest, IReverseIndexRequ
     }
 
     @Override
-    public void onReduceResponse(HashMap<String, ArrayList<Integer>> reducedValues) {
+    public void onReduceResponse(HashMap<String, Integer> reducedValues) {
         logger.overwriteFile(reducedValues.toString(), config.loggerReducePath);
-        HashMap<String, Integer> result = MergeResult.mergeResult(config, logger, reducedValues);
-
-        logger.overwriteFile(result.toString(), config.loggerResultPath);
+        logger.log("finnished", true);
     }
 
     @Override

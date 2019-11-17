@@ -16,11 +16,13 @@ public class Config {
     public final Integer datagramSocketPort = 9999;
     public final Integer findSlaveTimeout = 200;
     public Integer linesPerSplit = 2;
+    public Integer maxAmountOfReduceSize = 10000;
+    public Integer maxMessageBufferSlave = 1;
 
     public List<RaspberryPi> slaves;
     public RaspberryPi self;
 
-    public Path fileInputPath = Paths.get("Data/data10k.csv");
+    public Path fileInputPath = Paths.get("Data/data20k.csv");
     public Path loggerPath = Paths.get("LogFiles/logger.txt");
     public Path loggerMapPath = Paths.get("LogFiles/map.txt");
     public Path loggerSplitPath = Paths.get("LogFiles/split.txt");

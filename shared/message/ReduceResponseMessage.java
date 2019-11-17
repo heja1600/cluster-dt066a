@@ -1,20 +1,21 @@
 package shared.message;
 
+import java.util.HashMap;
+
 public class ReduceResponseMessage extends Message {
 
     private static final long serialVersionUID = 1L;
     public String id;
-    public Integer count;
-    public String word;
+    public HashMap<String, Integer> result;
 
     @Override
     public String messageType() {
-        return "Reduce Message";
+        return "Reduce Message Response";
     }
 
-    public ReduceResponseMessage(String id, Integer count, String word) {
+    public ReduceResponseMessage(String id, HashMap<String, Integer> result) {
         this.id = id;
-        this.count = count;
-        this.word = word;
+        this.result = result;
     }
+
 }
