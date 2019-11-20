@@ -2,12 +2,13 @@ package src;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import shared.communication.UDPCommunication;
 import shared.communication.listeners.IMessageReceived;
 import shared.config.Config;
+import shared.message.AssignPortMessage;
 import shared.message.AwakeMessage;
+import shared.message.AwakeResponseMessage;
 import shared.message.MappingMessage;
 import shared.message.MappingResponseMessage;
 import shared.message.Message;
@@ -21,25 +22,43 @@ import src.operations.Reversing;
 
 public class Main implements IMessageReceived {
     Config config;
-    UDPCommunication udpCommunication;
-    boolean awakeSent = false;
-    int counter = 0;
+    UDPCommunication privateCommunication;
+    UDPCommunication globalCommunication;
+    int sendCounter = 1;
+    boolean shouldLog = false;
+    Integer privatePort;
 
     public static void main(String[] args) {
-        new Main();
+
+        System.out.println("running slave");
+        new Main(args);
     }
 
-    public Main() {
+    public Main(String[] args) {
+        if (args.length > 0) {
+            shouldLog = true;
+            System.out.println("Logging mode activated");
+        }
+
         config = new Config();
-        udpCommunication = new UDPCommunication(config, this);
+        globalCommunication = new UDPCommunication(config.mainPort, this);
+
     }
 
     @Override
     public void onMessageReceived(Message message) {
 
-        if (message instanceof AwakeMessage && !awakeSent) {
-            awakeSent = true;
-            udpCommunication.sendMessage(new AwakeMessage(), message.raspberryPi.getInetAddress());
+        System.out.println(message.messageType());
+        if (shouldLog) {
+            System.out
+                    .println("Recieving {" + message.messageType() + "} from " + message.raspberryPi.getInetAddress());
+        }
+        if (message instanceof AssignPortMessage) {
+            handleAssignPortMessage((AssignPortMessage) message);
+        }
+        if (message instanceof AwakeMessage) {
+            System.out.println("awake");
+            globalCommunication.sendMessage(new AwakeResponseMessage(), message.raspberryPi.getInetAddress());
 
         } else if (message instanceof MappingMessage) {
             handleMappingMessage((MappingMessage) message);
@@ -52,12 +71,25 @@ public class Main implements IMessageReceived {
         }
     }
 
+    public void handleAssignPortMessage(AssignPortMessage apm) {
+        this.privatePort = apm.port;
+        System.out.println("recieved new private communication link in port " + apm.port);
+        if (this.privateCommunication != null)
+            this.privateCommunication.shutdown();
+        this.privateCommunication = new UDPCommunication(apm.port, this);
+    }
+
     public void handleMappingMessage(MappingMessage message) {
         Mapping mapping = new Mapping(message);
         ArrayList<String> words = mapping.map();
 
         MappingResponseMessage mrm = new MappingResponseMessage(message.id, words);
-        udpCommunication.sendMessage(mrm, message.raspberryPi.getInetAddress());
+
+        if (shouldLog) {
+            System.out.println(sendCounter++ + " msg:s sent, Sending {" + mrm.messageType() + "} to "
+                    + message.raspberryPi.getInetAddress() + "on private port " + this.privatePort);
+        }
+        privateCommunication.sendMessage(mrm, message.raspberryPi.getInetAddress());
     }
 
     public void handleReduceMessage(ReduceMessage message) {
@@ -65,7 +97,11 @@ public class Main implements IMessageReceived {
         HashMap<String, Integer> reduced = reducing.reduce();
 
         ReduceResponseMessage rrm = new ReduceResponseMessage(message.id, reduced);
-        udpCommunication.sendMessage(rrm, message.raspberryPi.getInetAddress());
+        if (shouldLog) {
+            System.out.println(sendCounter++ + " msg:s sent, Sending {" + rrm.messageType() + "} to "
+                    + message.raspberryPi.getInetAddress() + "on private port " + this.privatePort);
+        }
+        privateCommunication.sendMessage(rrm, message.raspberryPi.getInetAddress());
     }
 
     public void handleReverseMessage(ReverseMessage message) {
@@ -73,7 +109,12 @@ public class Main implements IMessageReceived {
         HashMap<String, ArrayList<String>> reversed = reversing.reverse();
 
         ReverseResponseMessage rrm = new ReverseResponseMessage(message.id, reversed);
-        udpCommunication.sendMessage(rrm, message.raspberryPi.getInetAddress());
+
+        if (shouldLog) {
+            System.out.println(sendCounter++ + " msg:s sent, Sending {" + rrm.messageType() + "} to "
+                    + message.raspberryPi.getInetAddress() + "on private port " + this.privatePort);
+        }
+        privateCommunication.sendMessage(rrm, message.raspberryPi.getInetAddress());
 
     }
 }

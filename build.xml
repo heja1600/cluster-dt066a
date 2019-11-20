@@ -1,0 +1,35 @@
+<project name="Slave" default="main" basedir=".">
+    <property name="src.dir" value="."></property>
+    <property name="build.dir" value="build"></property>
+    <property name="classes.dir" value="${build.dir}/classes"></property>
+    <property name="jar.dir" value="${build.dir}/jar"></property>
+
+    <property name="main-class" value="src.Main"></property>
+
+    <target name="clean">
+        <delete dir="${build.dir}"></delete>
+    </target>
+
+
+    <target name="compile">
+        <mkdir dir="${classes.dir}"></mkdir>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}"></javac>
+    </target>
+
+    <target name="jar" depends="compile">
+        <mkdir dir="${jar.dir}"></mkdir>
+        <jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
+            <manifest>
+                <attribute name="Main-class" value="${main-class}"></attribute>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="jar">
+        <java jar="${jar.dir}/${ant.project.name}.jar" fork="true"></java>
+    </target>
+
+    <target name="clean-build" depends="clean,jar" />
+
+    <target name="main" depends="clean, run"></target>
+</project>

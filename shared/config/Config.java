@@ -1,6 +1,5 @@
 package shared.config;
 
-import java.net.InetAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -13,16 +12,18 @@ public class Config {
     public final String Pi03 = "192.168.1.12";
     public final String Pi04 = "192.168.1.13";
 
-    public final Integer datagramSocketPort = 9999;
-    public final Integer findSlaveTimeout = 200;
+    public final String master = "192.168.1.9";
+
+    public final Integer mainPort = 9999;
+    public final Integer findSlaveTimeout = 500;
     public Integer linesPerSplit = 2;
     public Integer maxAmountOfReduceSize = 10000;
-    public Integer maxMessageBufferSlave = 1;
+    public Integer maxMessageBufferSlave = 40;
 
     public List<RaspberryPi> slaves;
     public RaspberryPi self;
 
-    public Path fileInputPath = Paths.get("Data/data20k.csv");
+    public Path fileInputPath = Paths.get("Data/test.csv");
     public Path loggerPath = Paths.get("LogFiles/logger.txt");
     public Path loggerMapPath = Paths.get("LogFiles/map.txt");
     public Path loggerSplitPath = Paths.get("LogFiles/split.txt");
@@ -32,11 +33,5 @@ public class Config {
     public Path loggerReversePath = Paths.get("LogFiles/reverse.txt");
 
     public Config() {
-        try {
-            self = new RaspberryPi(InetAddress.getLocalHost());
-        } catch (Exception e) {
-            e.printStackTrace();
-            // handle error if no ip address is available
-        }
     }
 }

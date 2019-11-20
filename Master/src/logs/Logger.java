@@ -12,8 +12,6 @@ import shared.message.Message;
 
 public class Logger {
     private File file;
-    private FileWriter fr;
-    private BufferedWriter br;
     private long initialTime = System.currentTimeMillis();
     private long previousTime = System.currentTimeMillis();
     private Config config;
@@ -88,14 +86,8 @@ public class Logger {
 
     private void initMembers(Path path) {
 
-        try {
-            file = new File(path.toString());
-            fr = new FileWriter(file, true);
-            br = new BufferedWriter(fr);
-        } catch (IOException e) {
+        file = new File(path.toString());
 
-            e.printStackTrace();
-        }
     }
 
     public void overwriteFile(String content, Path path) {

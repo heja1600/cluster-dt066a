@@ -8,23 +8,21 @@ import java.net.MulticastSocket;
 import shared.message.MessageSerializer;
 import shared.other.RaspberryPi;
 import shared.communication.listeners.IMessageReceived;
-import shared.config.Config;
 import shared.message.*;
 
 public class UDPCommunication {
     private DatagramSocket datagramSocket = null;
     private MessageSerializer messageSerializer = new MessageSerializer();
-    private Config config;
     private IMessageReceived iMessageReceived;
     private RecieveThread rt;
-
+    private Integer port;
     public boolean runCommunication = true;
 
-    public UDPCommunication(Config config, IMessageReceived iMessageReceived) {
+    public UDPCommunication(Integer port, IMessageReceived iMessageReceived) {
         this.iMessageReceived = iMessageReceived;
-        this.config = config;
+        this.port = port;
         try {
-            datagramSocket = new MulticastSocket(config.datagramSocketPort);
+            datagramSocket = new MulticastSocket(port);
             rt = new RecieveThread();
             rt.start();
 
@@ -50,12 +48,9 @@ public class UDPCommunication {
     }
 
     public <T extends Message> void sendMessage(T message, InetAddress inetAddress) {
-        // System.out.println("Message from " + config.self.getInetAddress() + " to " +
-        // inetAddress.getHostAddress());
         try {
             byte[] sendData = messageSerializer.serializeMessage(message);
-            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length,
-                    InetAddress.getByName("255.255.255.255"), config.datagramSocketPort);
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, inetAddress, port);
             datagramSocket.send(sendPacket);
         } catch (Exception e) {
             e.printStackTrace();
@@ -77,18 +72,18 @@ public class UDPCommunication {
                     e.printStackTrace();
                 }
             }
+            datagramSocket.close();
         }
 
         public Message attachRaspberryPi(DatagramPacket datagramPacket) {
             byte[] packetData = datagramPacket.getData();
             Message recievedMessage = messageSerializer.deserializeMessage(packetData);
+
             recievedMessage.raspberryPi = new RaspberryPi(datagramPacket.getAddress());
             return recievedMessage;
         }
 
         public void handleMessage(Message message) {
-            // if (!message.raspberryPi.getInetAddress().getHostAddress()
-            // .equals(config.self.getInetAddress().getHostAddress()))
             iMessageReceived.onMessageReceived(message);
         }
     }

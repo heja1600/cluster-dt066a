@@ -10,7 +10,7 @@ public class ReduceResponseMessage extends Message {
 
     @Override
     public String messageType() {
-        return "Reduce Message Response";
+        return "Reduce Response Message";
     }
 
     public ReduceResponseMessage(String id, HashMap<String, Integer> result) {

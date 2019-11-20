@@ -2,3 +2,6 @@
 /LogFiles
 /Data
 *.txt
+/build
+/Jars
+/dist

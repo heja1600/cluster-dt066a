@@ -13,7 +13,7 @@ public class ReverseResponseMessage extends Message {
 
     @Override
     public String messageType() {
-        return "Reverse Message";
+        return "Reverse Response Message";
     }
 
     public ReverseResponseMessage(String id, HashMap<String, ArrayList<String>> reverse) {

@@ -1,92 +1,77 @@
 package operations;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
 
-import listeners.IReverseIndexRequest;
+import java.util.Map;
+
 import logs.Logger;
-import shared.communication.UDPCommunication;
-import shared.communication.listeners.IMessageReceived;
+import network.MessageHandler;
 import shared.config.Config;
 import shared.message.Message;
 import shared.message.ReverseMessage;
 import shared.message.ReverseResponseMessage;
-import shared.other.RaspberryPi;
 
-public class ReverseIndex implements IMessageReceived {
+public class ReverseIndex {
 
-    private Iterator<Entry<String, ArrayList<String>>> it;
-    private Entry<String, ArrayList<String>> current;
     private Logger logger;
     private Config config;
-    private UDPCommunication udpCommunication;
-    private HashMap<String, ReverseMessage> messagesPending = new HashMap<>();
-    private Integer messageId = 0;
-    private IReverseIndexRequest iReverseIndexRequest;
+
+    private Integer messageSequenceCounter = 0;
     private HashMap<String, ArrayList<String>> reversed;
 
-    public ReverseIndex(HashMap<String, ArrayList<String>> mappedValues, Logger logger, Config config,
-            IReverseIndexRequest iReverseIndexRequest) {
-        this.it = mappedValues.entrySet().iterator();
-        this.iReverseIndexRequest = iReverseIndexRequest;
+    private ArrayList<MessageHandler<ReverseMessage>> messageHandlers;
+
+    private ArrayList<ArrayList<ReverseMessage>> messages = new ArrayList<>();
+
+    private HashMap<String, ArrayList<String>> mappedValues;
+
+    public ReverseIndex(HashMap<String, ArrayList<String>> mappedValues, Logger logger, Config config) {
         this.logger = logger;
+        this.mappedValues = mappedValues;
         this.config = config;
         this.reversed = new HashMap<String, ArrayList<String>>(mappedValues.size());
-        this.udpCommunication = new UDPCommunication(config, this);
+        this.messageHandlers = new ArrayList<>();
     }
 
-    public void send() {
-        logger.log("starting reverse", true);
-        for (RaspberryPi slave : config.slaves)
-            addPendingMessage(slave);
-        for (RaspberryPi slave : config.slaves)
-            sendReverse(slave);
+    public HashMap<String, ArrayList<String>> send() {
+        logger.log("preparing Reverse messages ", true);
+        for (int i = 0; i < config.slaves.size(); i++)
+            messages.add(new ArrayList<>());
 
-    }
+        Integer k = 0;
+        for (Map.Entry<String, ArrayList<String>> entry : mappedValues.entrySet()) {
 
-    private void addPendingMessage(RaspberryPi slave) {
-        this.current = this.it.next();
-        ReverseMessage reverseMessage = new ReverseMessage(getId(messageId++), current.getKey(), current.getValue());
-        messagesPending.put(slave.getInetAddress().getHostAddress(), reverseMessage);
+            ReverseMessage rm = new ReverseMessage(getId(messageSequenceCounter), entry.getKey(), entry.getValue(),
+                    config.slaves.get(k % config.slaves.size()));
+            messages.get(k % config.slaves.size()).add(rm);
+            k++;
+            messageSequenceCounter++;
+        }
 
-    }
+        logger.log("sending reverse messages, " + config.maxMessageBufferSlave + " messages per slave", true);
+        for (int i = 0; i < config.slaves.size(); i++) {
+            messageHandlers.add(new MessageHandler<>(messages.get(i), config.maxMessageBufferSlave,
+                    config.slaves.get(i).getPort(), logger));
+            messageHandlers.get(i).start();
+        }
+        for (MessageHandler<ReverseMessage> messageHandler : messageHandlers) {
+            try {
+                messageHandler.join();
 
-    private void sendReverse(RaspberryPi slave) {
-        InetAddress slaveAddress = slave.getInetAddress();
-        ReverseMessage rm = messagesPending.get(slaveAddress.getHostAddress());
-        udpCommunication.sendMessage(rm, slave.getInetAddress());
+                logger.log("reverse messages received", true);
+                for (Message rrm : messageHandler.getMessages())
+                    addNewReverseResponse(((ReverseResponseMessage) rrm).reverse);
+            } catch (InterruptedException e) {
+
+                e.printStackTrace();
+            }
+        }
+        return reversed;
     }
 
     private String getId(Integer id) {
         return "#OM_ID::" + id;
-    }
-
-    private void removePendingMessage(RaspberryPi slave) {
-        messagesPending.remove(slave.getInetAddress().getHostAddress());
-    }
-
-    @Override
-    public void onMessageReceived(Message message) {
-        if (message instanceof ReverseResponseMessage) {
-            ReverseResponseMessage rrm = (ReverseResponseMessage) message;
-            logger.log(rrm, false);
-            removePendingMessage(message.raspberryPi);
-            addNewReverseResponse(rrm.reverse);
-            if (it.hasNext()) {
-                addPendingMessage(message.raspberryPi);
-                sendReverse(message.raspberryPi);
-            } else {
-                if (messagesPending.isEmpty()) {
-                    udpCommunication.shutdown();
-                    logger.log("Finished to send Reverse", true);
-                    iReverseIndexRequest.onReverseIndexResponse(reversed);
-                }
-            }
-        }
     }
 
     private void addNewReverseResponse(HashMap<String, ArrayList<String>> reverse) {

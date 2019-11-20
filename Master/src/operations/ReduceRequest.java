@@ -1,96 +1,88 @@
 package operations;
 
-import java.net.InetAddress;
-
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
-import listeners.IReduceRequest;
 import logs.Logger;
-import shared.communication.UDPCommunication;
-import shared.communication.listeners.IMessageReceived;
+import network.MessageHandler;
+
 import shared.config.Config;
 import shared.message.Message;
 import shared.message.ReduceMessage;
 import shared.message.ReduceResponseMessage;
-import shared.other.RaspberryPi;
 
-public class ReduceRequest implements IMessageReceived {
+public class ReduceRequest {
     private Config config;
     private Logger logger;
-
-    private UDPCommunication udpCommunication;
-    private IReduceRequest iReduceRequest;
     private HashMap<String, ArrayList<String>> reverse;
     private HashMap<String, Integer> result = new HashMap<>();
-    private HashMap<String, ReduceMessage> messagesPending = new HashMap<>();
-    private ArrayList<String> keys = new ArrayList<>();
-    private Integer messageId = 0;
+    private Integer messageSequenceNumber = 0;
 
-    public ReduceRequest(Config config, Logger logger, HashMap<String, ArrayList<String>> reverse,
-            IReduceRequest iReduceRequest) {
+    private ArrayList<ArrayList<ReduceMessage>> messages = new ArrayList<>();
+    private ArrayList<MessageHandler<ReduceMessage>> messageHandlers;
+
+    public ReduceRequest(Config config, Logger logger, HashMap<String, ArrayList<String>> reverse) {
         this.config = config;
         this.logger = logger;
-        this.iReduceRequest = iReduceRequest;
         this.reverse = reverse;
-        this.udpCommunication = new UDPCommunication(config, this);
+        this.messageHandlers = new ArrayList<>();
     }
 
-    public void send() {
-        Integer totalMessages = 0;
-        logger.log("send reduces", true);
-        for (String key : reverse.keySet()) {
+    public HashMap<String, Integer> send() {
+
+        logger.log("preparing Reduce messages ", true);
+        ArrayList<String> keys = new ArrayList<>();
+
+        for (String key : reverse.keySet())
             keys.add(key);
-            totalMessages++;
-        }
-        logger.log("total of " + totalMessages + " ReduceMessage's has to be sent", true);
 
-        for (RaspberryPi slave : config.slaves) {
-            logger.log(slave.getInetAddress().getHostAddress() + " is prepared for reduce", true);
-            addPendingMessage(slave);
-        }
-
-        for (RaspberryPi slave : config.slaves)
-            sendReduce(slave);
-    }
-
-    private void addPendingMessage(RaspberryPi slave) {
+        for (int i = 0; i < config.slaves.size(); i++)
+            messages.add(new ArrayList<>());
 
         HashMap<String, ArrayList<String>> sendingData = new HashMap<>();
 
-        /**
-         * this is very retarded, but i do this to test network throughtput
-         */
-        Integer currentSize = 0;
-        while (currentSize < config.maxAmountOfReduceSize && !keys.isEmpty()) {
-            String key = keys.get(0);
-            keys.remove(0);
-            ArrayList<String> reduce = reverse.get(key);
-            sendingData.put(key, reduce);
-            currentSize += reduce.size();
+        for (int i = 0, bufferSize = 0, piCounter = 0; i < keys.size(); i++) {
+            ArrayList<String> reduce = reverse.get(keys.get(i));
+            sendingData.put(keys.get(i), reduce);
+            bufferSize += reduce.size();
+            if (bufferSize > config.maxAmountOfReduceSize || i == keys.size() - 1) {
+                ReduceMessage reduceMessage = new ReduceMessage(getId(messageSequenceNumber), sendingData,
+                        config.slaves.get(piCounter % config.slaves.size()));
+                messages.get(piCounter % config.slaves.size()).add(reduceMessage);
+                messageSequenceNumber++;
+                sendingData = new HashMap<>();
+                bufferSize = 0;
+                piCounter++;
+            }
         }
 
-        ReduceMessage rm = new ReduceMessage(getId(messageId++), sendingData);
+        logger.log("sending reduce messages", true);
 
-        messagesPending.put(slave.getInetAddress().getHostAddress(), rm);
+        for (int i = 0; i < config.slaves.size(); i++) {
+            messageHandlers.add(new MessageHandler<ReduceMessage>(messages.get(i), config.maxMessageBufferSlave,
+                    config.slaves.get(i).getPort(), logger));
+            messageHandlers.get(i).start();
+        }
 
+        for (MessageHandler<ReduceMessage> messageHandler : messageHandlers) {
+            try {
+                messageHandler.join();
+
+                logger.log("mapping messages received", true);
+                for (Message mrm : messageHandler.getMessages())
+                    insert(((ReduceResponseMessage) mrm).result);
+
+            } catch (InterruptedException e) {
+
+                e.printStackTrace();
+            }
+        }
+        return result;
     }
 
     private String getId(Integer id) {
         return "#RM_ID::" + id;
-    }
-
-    private void removePendingMessage(RaspberryPi slave) {
-        messagesPending.remove(slave.getInetAddress().getHostAddress());
-    }
-
-    private void sendReduce(RaspberryPi slave) {
-        InetAddress slaveAddress = slave.getInetAddress();
-        ReduceMessage reduceMessage = messagesPending.get(slaveAddress.getHostAddress());
-        udpCommunication.sendMessage(reduceMessage, slave.getInetAddress());
-
     }
 
     private void insert(HashMap<String, Integer> reducedValues) {
@@ -99,31 +91,6 @@ public class ReduceRequest implements IMessageReceived {
                 result.put(entry.getKey(), entry.getValue());
             else
                 result.put(entry.getKey(), result.get(entry.getKey()) + entry.getValue());
-        }
-    }
-
-    @Override
-    public void onMessageReceived(Message message) {
-
-        if (message instanceof ReduceResponseMessage) {
-            ReduceResponseMessage rrm = (ReduceResponseMessage) message;
-            logger.log(rrm, false);
-            insert(rrm.result);
-            removePendingMessage(message.raspberryPi);
-            // If theres still lines to be sent
-            if (!keys.isEmpty()) {
-                addPendingMessage(message.raspberryPi);
-                sendReduce(message.raspberryPi);
-                // If theres no lines to be sent, and there is no pending messages, terminate
-                // the process.
-            } else {
-                // send callback
-                if (messagesPending.isEmpty()) {
-                    udpCommunication.shutdown();
-                    logger.log("Finished with reduce", true);
-                    iReduceRequest.onReduceResponse(result);
-                }
-            }
         }
     }
 }
