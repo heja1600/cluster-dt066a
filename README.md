@@ -45,3 +45,6 @@ to run the project make sure that Data folder is created with your testfiles, al
 ### TODO
 
 - [x] implement package loss, it is needed for larger line config and window sizes. currently working only for 20 of window sizes and 50 of line sizes
+
+// pi perspective
+![image](https://user-images.githubusercontent.com/43444902/69355146-9a769a80-0c81-11ea-860a-8fae77390435.png)
