@@ -41,3 +41,6 @@ and
 to run the project make sure that Data folder is created with your testfiles, also make sure to create a folder LogFiles. THen run it like
 
 `java -jar Master.jar <filepath> <lines per split> <message window> <max amount of reduce messages> <should make file, leave this if you want it to create log files>`
+
+// pi perspective
+![image](https://user-images.githubusercontent.com/43444902/69355146-9a769a80-0c81-11ea-860a-8fae77390435.png)
