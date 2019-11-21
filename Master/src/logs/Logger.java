@@ -14,7 +14,25 @@ public class Logger {
     private File file;
     private long initialTime = System.currentTimeMillis();
     private long previousTime = System.currentTimeMillis();
+
+    private long startTime;
+    private long endTime;
+
+    private long importTime;
+    private long splitTime;
+    private long mapTime;
+    private long reverseTime;
+    private long reduceTime;
+
+    private long importTimeEnd;
+    private long splitTimeEnd;
+    private long mapTimeEnd;
+    private long reverseTimeEnd;
+    private long reduceTimeEnd;
+
     private Config config;
+
+    private boolean shouldLog = true;
 
     public Logger(Config config) {
         this.config = config;
@@ -47,8 +65,13 @@ public class Logger {
 
     }
 
-    public <T extends Message> void log(T message, boolean shouldSystemOut) {
+    public void dontLog() {
+        this.shouldLog = false;
+    }
 
+    public <T extends Message> void log(T message, boolean shouldSystemOut) {
+        if (!shouldLog)
+            return;
         String log = "% MESSAGELOG % {" + message.messageType() + "} from: "
                 + message.raspberryPi.getInetAddress().getHostAddress();
         writeLog(log, shouldSystemOut);
@@ -60,7 +83,8 @@ public class Logger {
     }
 
     private void writeLog(String log, boolean shouldSystemOut) {
-
+        if (!shouldLog)
+            return;
         try {
             long timeElapsed = System.currentTimeMillis() - initialTime;
             long timeElapsedSinceLast = System.currentTimeMillis() - previousTime;
@@ -102,5 +126,104 @@ public class Logger {
             e.printStackTrace();
         }
         writeLog("[ Overwriting ] Finnished ->" + path.toString(), true);
+    }
+
+    public void startImport() {
+        this.importTime = System.currentTimeMillis() - initialTime - startTime;
+        writeLog("-== TIMER IMPORT STARTED =-- started [" + toSeconds(importTime) + "s]", true);
+    }
+
+    public void endImport() {
+        importTimeEnd = System.currentTimeMillis() - initialTime - startTime;
+        writeLog(
+                "-== TIMER IMPORT ENDED =-- started [" + toSeconds(importTime) + "s]" + " ended ["
+                        + toSeconds(importTimeEnd) + "s]" + " total [" + toSeconds(importTimeEnd - importTime) + "s]",
+                true);
+    }
+
+    public void startMap() {
+        this.mapTime = System.currentTimeMillis() - initialTime - startTime;
+        writeLog("-== TIMER MAP STARTED =-- started [" + toSeconds(mapTime) + "s]", true);
+    }
+
+    public void endMap() {
+        mapTimeEnd = System.currentTimeMillis() - initialTime - startTime;
+        writeLog("-== TIMER MAP ENDED =-- started [" + toSeconds(mapTime) + "s]" + " ended [" + toSeconds(mapTimeEnd)
+                + "s]" + " total [" + toSeconds(mapTimeEnd - mapTime) + "s]", true);
+    }
+
+    public void startReverse() {
+        this.reverseTime = System.currentTimeMillis() - initialTime - startTime;
+        writeLog("-== TIMER REVERSE STARTED =-- started [" + toSeconds(reverseTime) + "s]", true);
+    }
+
+    public void endReverse() {
+        reverseTimeEnd = System.currentTimeMillis() - initialTime - startTime;
+        writeLog("-== TIMER REVERSE ENDED =-- started [" + toSeconds(reverseTime) + "s]" + " ended ["
+                + toSeconds(reverseTimeEnd) + "s]" + " total [" + toSeconds(reverseTimeEnd - reverseTime) + "s]", true);
+    }
+
+    public void startSplit() {
+        this.splitTime = System.currentTimeMillis() - initialTime - startTime;
+        writeLog("-== TIMER SPLIT STARTED =-- started [" + toSeconds(splitTime) + "s]", true);
+    }
+
+    public void endSplit() {
+        splitTimeEnd = System.currentTimeMillis() - initialTime - startTime;
+        writeLog(
+                "-== TIMER SPLIT ENDED =-- started [" + toSeconds(splitTime) + "s]" + " ended ["
+                        + toSeconds(splitTimeEnd) + "s]" + " total [" + toSeconds(splitTimeEnd - splitTime) + "s]",
+                true);
+    }
+
+    public void startReduce() {
+        this.reduceTime = System.currentTimeMillis() - initialTime - startTime;
+        writeLog("-== TIMER REDUCE STARTED =-- started [" + toSeconds(reduceTime) + "s]", true);
+    }
+
+    public void endReduce() {
+        reduceTimeEnd = System.currentTimeMillis() - initialTime - startTime;
+        writeLog(
+                "-== TIMER REDUCE ENDED =-- started [" + toSeconds(reduceTime) + "s]" + " ended ["
+                        + toSeconds(reduceTimeEnd) + "s]" + " total [" + toSeconds(reduceTimeEnd - reduceTime) + "s]",
+                true);
+    }
+
+    public void finish() {
+        this.endTime = System.currentTimeMillis() - initialTime;
+        ;
+
+        // IMPORT
+        writeLog(
+                "-== FINAL STATS IMPORT =-- started [" + toSeconds(importTime) + "s]" + " ended ["
+                        + toSeconds(importTimeEnd) + "s]" + " total [" + toSeconds(importTimeEnd - importTime) + "s]",
+                true);
+
+        // SPLIT
+        writeLog(
+                "-== FINAL STATS SPLIT =-- started [" + toSeconds(splitTime) + "s]" + " ended ["
+                        + toSeconds(splitTimeEnd) + "s]" + " total [" + toSeconds(splitTimeEnd - splitTime) + "s]",
+                true);
+
+        // MAP
+        writeLog("-== FINAL STATS MAP =-- started [" + toSeconds(mapTime) + "s]" + " ended [" + toSeconds(mapTimeEnd)
+                + "s]" + " total [" + toSeconds(mapTimeEnd - mapTime) + "s]", true);
+        // REVERSE
+        writeLog("-== FINAL STATS REVERSE =-- started [" + toSeconds(reverseTime) + "s]" + " ended ["
+                + toSeconds(reverseTimeEnd) + "s]" + " total [" + toSeconds(reverseTimeEnd - reverseTime) + "s]", true);
+
+        // REVERSE
+        writeLog(
+                "-== FINAL STATS REDUCE =-- started [" + toSeconds(reduceTime) + "s]" + " ended ["
+                        + toSeconds(reduceTimeEnd) + "s]" + " total [" + toSeconds(reduceTimeEnd - reduceTime) + "s]",
+                true);
+
+        // TOTAL
+        writeLog("-== FINAL STATS MAP REDUCE =-- started [" + toSeconds(startTime) + "s]" + " ended ["
+                + toSeconds(endTime) + "s]" + " total [" + toSeconds(endTime - startTime) + "s]", true);
+    }
+
+    public void start() {
+        this.startTime = System.currentTimeMillis() - initialTime;
     }
 }

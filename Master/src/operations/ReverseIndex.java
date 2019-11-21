@@ -49,9 +49,9 @@ public class ReverseIndex {
             messageSequenceCounter++;
         }
 
-        logger.log("sending reverse messages, " + config.maxMessageBufferSlave + " messages per slave", true);
+        logger.log("sending reverse messages, " + config.messageWindow + " messages per slave", true);
         for (int i = 0; i < config.slaves.size(); i++) {
-            messageHandlers.add(new MessageHandler<>(messages.get(i), config.maxMessageBufferSlave,
+            messageHandlers.add(new MessageHandler<>(messages.get(i), config.messageWindow,
                     config.slaves.get(i).getPort(), logger));
             messageHandlers.get(i).start();
         }

@@ -60,8 +60,11 @@ public class ReduceRequest {
         logger.log("sending reduce messages", true);
 
         for (int i = 0; i < config.slaves.size(); i++) {
-            messageHandlers.add(new MessageHandler<ReduceMessage>(messages.get(i), config.maxMessageBufferSlave,
+            if (messages.get(i).isEmpty())
+                continue;
+            messageHandlers.add(new MessageHandler<ReduceMessage>(messages.get(i), config.messageWindow,
                     config.slaves.get(i).getPort(), logger));
+
             messageHandlers.get(i).start();
         }
 
@@ -69,7 +72,7 @@ public class ReduceRequest {
             try {
                 messageHandler.join();
 
-                logger.log("mapping messages received", true);
+                logger.log("reduce messages received", true);
                 for (Message mrm : messageHandler.getMessages())
                     insert(((ReduceResponseMessage) mrm).result);
 

@@ -47,10 +47,10 @@ public class MapRequest {
             messageSequenceCounter++;
         }
 
-        logger.log("sending map messages, " + config.maxMessageBufferSlave + " messages per slave", true);
+        logger.log("sending map messages, " + config.messageWindow + " messages per slave", true);
 
         for (int i = 0; i < config.slaves.size(); i++) {
-            messageHandlers.add(new MessageHandler<MappingMessage>(messages.get(i), config.maxMessageBufferSlave,
+            messageHandlers.add(new MessageHandler<MappingMessage>(messages.get(i), config.messageWindow,
                     config.slaves.get(i).getPort(), logger));
             messageHandlers.get(i).start();
         }
