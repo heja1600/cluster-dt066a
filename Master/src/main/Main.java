@@ -41,12 +41,7 @@ public class Main implements IRaspberryAlive {
         if (args.length > 2) {
             this.config.messageWindow = Integer.parseInt(args[2]);
         }
-
         if (args.length > 3) {
-            this.config.maxAmountOfReduceSize = Integer.parseInt(args[3]);
-        }
-
-        if (args.length > 4) {
             this.logger.dontLog();
         }
     }

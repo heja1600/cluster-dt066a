@@ -27,25 +27,31 @@ public class MessageHandler<T extends Message> extends Thread implements IMessag
         this.windowMessages = new ArrayList<T>();
         this.logger = logger;
         this.port = port;
-
-        logger.log("message handler sending " + pendingMessages.size() + " messages on port " + port, true);
+        logger.log("message handler sending " + pendingMessages.size() + ", port " + port + ", window size "
+                + messageWindow, true);
         for (int i = 0; i < messageWindow && !pendingMessages.isEmpty(); i++) {
             windowMessages.add(pendingMessages.get(0));
             pendingMessages.remove(0);
         }
-        logger.log("window Messages size " + windowMessages.size() + " port " + port, true);
     }
 
     @Override
     public void run() {
-        for (T message : windowMessages)
-            udpCommunication.sendMessage(message, message.raspberryPi.getInetAddress());
-        try {
-            udpCommunication.join();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        if (!windowMessages.isEmpty()) {
+
+            for (T message : windowMessages)
+                udpCommunication.sendMessage(message, message.raspberryPi.getInetAddress());
+
+            try {
+                udpCommunication.join();
+            } catch (InterruptedException e) {
+
+                e.printStackTrace();
+            }
+        } else {
+            this.udpCommunication.shutdown();
         }
+
     }
 
     @Override

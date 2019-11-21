@@ -16,9 +16,8 @@ public class Config {
 
     public final Integer mainPort = 9999;
     public final Integer findSlaveTimeout = 500;
-    public Integer linesPerSplit = 2;
-    public Integer maxAmountOfReduceSize = 10;
-    public Integer messageWindow = 40;
+    public Integer linesPerSplit = 50;
+    public Integer messageWindow = 10;
 
     public List<RaspberryPi> slaves;
     public RaspberryPi self;

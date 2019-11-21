@@ -16,7 +16,6 @@ public class WordCount {
     Config config;
     Logger logger;
     long startTime = System.currentTimeMillis();
-    private ArrayList<String> content;
 
     public WordCount(Config config, Logger logger) {
         this.config = config;
@@ -28,7 +27,7 @@ public class WordCount {
         try {
             logger.start();
             logger.startImport();
-            content = ImportFile.importFile(logger, config.fileInputPath);
+            ArrayList<String> content = ImportFile.importFile(logger, config.fileInputPath);
             logger.endImport();
             logger.overwriteFile(content.toString(), config.loggerImportPath);
             // Split
@@ -61,4 +60,5 @@ public class WordCount {
             e.printStackTrace();
         }
     }
+
 }

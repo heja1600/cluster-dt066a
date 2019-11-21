@@ -221,6 +221,11 @@ public class Logger {
         // TOTAL
         writeLog("-== FINAL STATS MAP REDUCE =-- started [" + toSeconds(startTime) + "s]" + " ended ["
                 + toSeconds(endTime) + "s]" + " total [" + toSeconds(endTime - startTime) + "s]", true);
+
+        writeLog("( LINES PER SPLIT ) " + config.linesPerSplit, true);
+        writeLog("( WINDOW SIZE ) " + config.messageWindow, true);
+        writeLog("( FILE PATH ) " + config.fileInputPath.toString(), true);
+
     }
 
     public void start() {

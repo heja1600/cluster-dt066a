@@ -10,7 +10,7 @@ There's no need to setup ip addresses, The master program finds all active slave
 - Split (Master)
 - Map (Slave)
 - Reverse/Shuffle (Slave)
-- Reduce (Slave) - This step is implemented a little bit wierd, since I basiacally have the answer already in the reverse state
+- Reduce (Master)
 
 ![image](https://user-images.githubusercontent.com/43444902/69354735-e4ab4c00-0c80-11ea-85d6-e1e05f3fd083.png)
 
@@ -40,4 +40,8 @@ and
 
 to run the project make sure that Data folder is created with your testfiles, also make sure to create a folder LogFiles. THen run it like
 
-`java -jar Master.jar <filepath> <lines per split> <message window> <max amount of reduce messages> <should make file, leave this if you want it to create log files>`
+`java -jar Master.jar <filepath> <lines per split> <message window> <should make file, leave this if you want it to create log files>`
+
+### TODO
+
+- [x] implement package loss, it is needed for larger line config and window sizes. currently working only for 20 of window sizes and 50 of line sizes
