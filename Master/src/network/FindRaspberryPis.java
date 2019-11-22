@@ -39,7 +39,7 @@ public class FindRaspberryPis implements IMessageReceived {
             communication.shutdown();
             if (this.aliveRaspberryPis.size() == 0) {
                 logger.log("no Raspberry Pis were found", true);
-                System.exit(1);
+                System.exit(0);
                 return;
             }
             iRaspberryAlive.onRaspberryPiResponse(this.aliveRaspberryPis);
