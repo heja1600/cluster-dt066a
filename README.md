@@ -48,3 +48,60 @@ to run the project make sure that Data folder is created with your testfiles, al
 
 // pi perspective
 ![image](https://user-images.githubusercontent.com/43444902/69355146-9a769a80-0c81-11ea-860a-8fae77390435.png)
+
+### TESTS
+
+1x Master pc
+4x Raspberry Pi 3 model B+
+
+#### NATIVE
+
+##### 100k lines 11.8 MB
+
+- [ ] 1 message window, 1 lines
+- [ ] 5 message window, 1 lines
+- [ ] 10 message window, 1 lines
+- [ ] 1 message window, 25 lines
+- [ ] 5 message window, 25 lines
+- [ ] 10 message window, 25 lines
+- [ ] 1 message window, 50 lines
+- [ ] 5 message window, 50 lines
+- [ ] 10 message window, 50 lines
+
+##### 250k lines 29.7 MB
+
+- [ ] 1 message window, 1 lines
+- [ ] 5 message window, 1 lines
+- [ ] 10 message window, 1 lines
+- [ ] 1 message window, 25 lines
+- [ ] 5 message window, 25 lines
+- [ ] 10 message window, 25 lines
+- [ ] 1 message window, 50 lines
+- [ ] 5 message window, 50 lines
+- [ ] 10 message window, 50 lines
+
+##### 500k lines 59.5 MB
+
+- [ ] 1 message window, 1 lines
+- [ ] 5 message window, 1 lines
+- [ ] 10 message window, 1 lines
+- [ ] 1 message window, 25 lines
+- [ ] 5 message window, 25 lines
+- [ ] 10 message window, 25 lines
+- [ ] 1 message window, 50 lines
+- [ ] 5 message window, 50 lines
+- [ ] 10 message window, 50 lines
+
+##### 1000k lines 119 MB
+
+- [ ] 1 message window, 1 lines
+- [ ] 5 message window, 1 lines
+- [ ] 10 message window, 1 lines
+- [ ] 1 message window, 25 lines
+- [ ] 5 message window, 25 lines
+- [ ] 10 message window, 25 lines
+- [ ] 1 message window, 50 lines
+- [ ] 5 message window, 50 lines
+- [ ] 10 message window, 50 lines
+
+#### HYPERVISED

@@ -1,10 +1,10 @@
-<project name="Slave" default="main" basedir=".">
+<project name="Master" default="main" basedir=".">
     <property name="src.dir" value="."></property>
     <property name="build.dir" value="build"></property>
     <property name="classes.dir" value="${build.dir}/classes"></property>
     <property name="jar.dir" value="${build.dir}/jar"></property>
 
-    <property name="main-class" value="src.Main"></property>
+    <property name="main-class" value="main.Main"></property>
 
     <target name="clean">
         <delete dir="${build.dir}"></delete>

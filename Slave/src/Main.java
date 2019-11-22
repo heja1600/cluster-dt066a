@@ -72,6 +72,7 @@ public class Main implements IMessageReceived {
     }
 
     public void handleAssignPortMessage(AssignPortMessage apm) {
+        sendCounter = 0;
         this.privatePort = apm.port;
         System.out.println("recieved new private communication link in port " + apm.port);
         if (this.privateCommunication != null)

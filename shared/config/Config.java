@@ -22,7 +22,7 @@ public class Config {
     public List<RaspberryPi> slaves;
     public RaspberryPi self;
 
-    public Path fileInputPath = Paths.get("Data/data100k.csv");
+    public Path fileInputPath = Paths.get("Data/100k.csv");
     public Path loggerPath = Paths.get("LogFiles/logger.txt");
     public Path loggerMapPath = Paths.get("LogFiles/map.txt");
     public Path loggerSplitPath = Paths.get("LogFiles/split.txt");
