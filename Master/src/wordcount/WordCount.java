@@ -56,6 +56,7 @@ public class WordCount {
             logger.overwriteFile(reducedValues.toString(), config.loggerReducePath);
             logger.finish();
 
+            logger.endLog(reducedValues);
             System.exit(1);
         } catch (Exception e) {
             e.printStackTrace();

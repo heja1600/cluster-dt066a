@@ -11,6 +11,7 @@ import logs.Logger;
 public class ImportFile {
     public static ArrayList<String> importFile(Logger logger, Path path) throws Exception {
         logger.log("Importing file", true);
+
         List<String> lines = new ArrayList<String>();
         ArrayList<String> cleanLines = new ArrayList<String>();
         if (!path.toFile().exists()) {

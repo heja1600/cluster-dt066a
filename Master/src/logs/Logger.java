@@ -2,7 +2,10 @@ package logs;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -50,8 +53,8 @@ public class Logger {
             initMembers(config.loggerReducePath);
             overwriteFile("", config.loggerReducePath);
 
-            initMembers(config.loggerResultPath);
-            overwriteFile("", config.loggerResultPath);
+            // initMembers(config.loggerResultPath);
+            // overwriteFile("", config.loggerResultPath);
 
             initMembers(config.loggerReversePath);
             overwriteFile("", config.loggerReversePath);
@@ -102,6 +105,40 @@ public class Logger {
         }
 
         previousTime = System.currentTimeMillis();
+    }
+
+    public void endLog(HashMap<String, Integer> reducedValues) {
+
+        try {
+
+            String totalLog = "";
+            Integer totalWords = 0;
+            for (Integer value : reducedValues.values())
+                totalWords += value;
+
+            PrintWriter out;
+            out = new PrintWriter(new BufferedWriter(new FileWriter(config.loggerResultPath.toString(), true)));
+
+            String fileSize = ((double) ((int) ((double) config.fileInputPath.toFile().length() / (1024 * 1024)) * 1000)
+                    / 1000) + "MB";
+            Integer linesOfFile = Files.readAllLines(config.fileInputPath, Charset.forName("UTF-8")).size();
+
+            Integer totalMessages = (linesOfFile / config.linesPerSplit) * 4;
+
+            totalLog += "|" + fileSize + "|" + totalMessages + "|" + linesOfFile + "|" + totalWords + "|"
+                    + config.linesPerSplit + "|" + config.messageWindow;
+
+            totalLog += "|" + toSeconds(importTimeEnd - importTime) + "s|" + toSeconds(splitTimeEnd - splitTime);
+            totalLog += "s|" + toSeconds(mapTimeEnd - mapTime) + "s|" + toSeconds(reverseTimeEnd - reverseTime);
+            totalLog += "s|" + toSeconds(reduceTimeEnd - reduceTime) + "s|" + toSeconds(endTime - startTime) + "s|";
+
+            out.println(totalLog);
+            out.close();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
     }
 
     private String toSeconds(long ms) {
